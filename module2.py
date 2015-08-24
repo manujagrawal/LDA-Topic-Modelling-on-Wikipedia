@@ -38,7 +38,7 @@ del data
 
 stop_words = []
 
-sw = file('sample.txt', 'r')
+sw = file('stop_words', 'r')
 for word in sw:
     word = word.strip().strip('\n')
     if word not in stop_words:

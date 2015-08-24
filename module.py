@@ -2,10 +2,23 @@ from gensim.corpora import Dictionary, HashDictionary, MmCorpus, WikiCorpus
 from gensim.models import TfidfModel
 from gensim.utils import smart_open, simple_preprocess
 from gensim.corpora.wikicorpus import _extract_pages, filter_wiki
-from gensim.parsing.preprocessing import STOPWORDS
+# from gensim.parsing.preprocessing import STOPWORDS
+
+stop_words = []
+
+sw = file('stop_words', 'r')
+for word in sw:
+    word = word.strip().strip('\n')
+    if word not in stop_words:
+        stop_words.append(word)
+sw.close()
+
+stop_words = set(stop_words)
+
 
 def tokenize(text):
-    return [token for token in simple_preprocess(text) if token not in STOPWORDS]
+	global stop_words 
+    return [token for token in simple_preprocess(text) if token not in stop_words]
 
 def iter_wiki(dump_file):
     """Yield each article from the Wikipedia dump, as a `(title, tokens)` 2-tuple."""
@@ -16,7 +29,6 @@ def iter_wiki(dump_file):
         if len(tokens) < 50 or any(title.startswith(ns + ':') for ns in ignore_namespaces):
             continue  # ignore short articles and various meta-articles
         yield title, tokens
-
 
 
 wiki_stream = (tokens for _, tokens in iter_wiki('enwiki-latest-pages-articles.xml.bz2'))
