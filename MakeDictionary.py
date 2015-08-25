@@ -6,7 +6,7 @@ from gensim.corpora.wikicorpus import _extract_pages, filter_wiki
 
 stop_words = []
 
-sw = file('stop_words', 'r')
+sw = file('stop_words.txt', 'r')
 for word in sw:
     word = word.strip().strip('\n')
     if word not in stop_words:
@@ -18,7 +18,7 @@ stop_words = set(stop_words)
 
 def tokenize(text):
 	global stop_words 
-    return [token for token in simple_preprocess(text) if token not in stop_words]
+	return [token for token in simple_preprocess(text) if token not in stop_words]
 
 def iter_wiki(dump_file):
     """Yield each article from the Wikipedia dump, as a `(title, tokens)` 2-tuple."""
