@@ -2,8 +2,9 @@ from gensim.corpora import Dictionary, HashDictionary, MmCorpus, WikiCorpus
 from gensim.models import TfidfModel
 from gensim.utils import smart_open, simple_preprocess
 from gensim.corpora.wikicorpus import _extract_pages, filter_wiki
+from gensim import corpora
 
-# Takes 6Hrs
+# Takes 6hrs 
 
 stop_words = []
 
@@ -21,7 +22,7 @@ def tokenize(text):
 	global stop_words 
 	return [token for token in simple_preprocess(text) if token not in stop_words]
 
-def iter_wiki(dump_file):
+def iter_wiki(dump_file): # making a wiki token stream
     """Yield each article from the Wikipedia dump, as a `(title, tokens)` 2-tuple."""
     ignore_namespaces = 'Wikipedia Category File Portal Template MediaWiki User Help Book Draft'.split()
     for title, text, pageid in _extract_pages(smart_open(dump_file)):
@@ -29,24 +30,18 @@ def iter_wiki(dump_file):
         tokens = tokenize(text)
         if len(tokens) < 50 or any(title.startswith(ns + ':') for ns in ignore_namespaces):
             continue  # ignore short articles and various meta-articles
-        yield title, tokens
+        yield tokens
 
+# wiki_stream = (tokens for _, tokens in iter_wiki('enwiki-latest-pages-articles.xml.bz2'))
 
-wiki_stream = (tokens for _, tokens in iter_wiki('enwiki-latest-pages-articles.xml.bz2'))
+def corpus_stream (tokenStream, dictionary):
+    for tokens in tokenStream:
+        yield dictionary.doc2bow(tokens)
 
-print "making of dictionary started"
-wiki_dictionary = Dictionary(wiki_stream)
-print "wikipedia dictionary made"
+print ".... loading the dictionary"
+wiki_dict =Dictionary.load('WikiDictionary.dict')
+print "dictionary loaded ...."
 
-print "...... saving the dictionary"
-wiki_dictionary.save('WikiDictionary.dict')
-print "dictionary saved ........"
-
-
-
-
-# wiki = WikiCorpus('enwiki-latest-pages-articles.xml.bz2')  # make a corpus from wiki dump
-
-# MmCorpus.save_corpus('WikiCorpus.mm', wiki) # Saving the corpus
-
-
+print ".... making the serialised corpus "
+corpora.MmCorpus.serialize('Wiki_Corpus.mm', corpus_stream( iter_wiki('enwiki-latest-pages-articles.xml.bz2'), wiki_dict ) )
+print "serialised corpus made ...."
