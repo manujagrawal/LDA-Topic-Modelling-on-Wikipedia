@@ -5,18 +5,16 @@ from gensim.corpora.wikicorpus import _extract_pages, filter_wiki
 from gensim import corpora
 
 # Takes 6hrs 
-
 stop_words = []
 
 sw = file('stop_words.txt', 'r')
 for word in sw:
-    word = word.strip().strip('\n')
-    if word not in stop_words:
-        stop_words.append(word)
+	word = word.strip().strip('\n')
+	if word not in stop_words:
+		stop_words.append(word)
 sw.close()
 
 stop_words = set(stop_words)
-
 
 def tokenize(text):
 	global stop_words 
@@ -35,13 +33,19 @@ def iter_wiki(dump_file): # making a wiki token stream
 # wiki_stream = (tokens for _, tokens in iter_wiki('enwiki-latest-pages-articles.xml.bz2'))
 
 def corpus_stream (tokenStream, dictionary):
-    for tokens in tokenStream:
-        yield dictionary.doc2bow(tokens)
+	i = 0
+	for tokens in tokenStream:
+		if (i%1000) == 0 :
+			print "streamed ", i, " documents "
+		i+=1
+		yield dictionary.doc2bow(tokens)
+	
+if __name__ == '__main__':
+		
+	print ".... loading the dictionary"
+	wiki_dict =Dictionary.load('WikiDictionary200k.dict')
+	print "dictionary loaded ...."
 
-print ".... loading the dictionary"
-wiki_dict =Dictionary.load('WikiDictionary.dict')
-print "dictionary loaded ...."
-
-print ".... making the serialised corpus "
-corpora.MmCorpus.serialize('Wiki_Corpus.mm', corpus_stream( iter_wiki('enwiki-latest-pages-articles.xml.bz2'), wiki_dict ) )
-print "serialised corpus made ...."
+	print ".... making the serialised corpus "
+	corpora.MmCorpus.serialize('Wiki_Corpus.mm', corpus_stream( iter_wiki('enwiki-latest-pages-articles.xml.bz2'), wiki_dict ) )
+	print "serialised corpus made ...."
